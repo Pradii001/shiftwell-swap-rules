@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Shiftwell - Swap Rules Prototype</title>
+<style>
+:root{--ink:#17253d;--muted:#5e6b80;--blue:#2357d6;--line:#dce3ee;--bg:#f4f7fb;--card:#fff;--fld:#fff;--green:#16794b;--gb:#eaf7ef;--gl:#b7e2c7;--amber:#9a5b00;--ab:#fff5e5;--al:#f1d39c;--red:#b42318;--rb:#fff0ef;--rl:#f0c1bd;--nb:#f2f5fb;--hd:#13233e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e8edf3;--muted:#9aa7b5;--blue:#5b8cff;--line:#2c3a49;--bg:#0f1720;--card:#18222e;--fld:#0f1720;--green:#6fd49a;--gb:#14301f;--gl:#245a3a;--amber:#f0c14b;--ab:#33290c;--al:#5c4a14;--red:#ff8a80;--rb:#3a1715;--rl:#6b2a26;--nb:#1d2937;--hd:#0b121b}}
+:root[data-theme="dark"]{--ink:#e8edf3;--muted:#9aa7b5;--blue:#5b8cff;--line:#2c3a49;--bg:#0f1720;--card:#18222e;--fld:#0f1720;--green:#6fd49a;--gb:#14301f;--gl:#245a3a;--amber:#f0c14b;--ab:#33290c;--al:#5c4a14;--red:#ff8a80;--rb:#3a1715;--rl:#6b2a26;--nb:#1d2937;--hd:#0b121b}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink)}
+header{background:var(--hd);color:#fff;padding:25px max(20px,calc((100% - 1000px)/2))}
+.eyebrow{color:#9eb9ff;text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800}
+h1{font-size:27px;margin:5px 0}header p{margin:0;color:#d6deeb;max-width:700px}
+main{max-width:1000px;margin:22px auto;padding:0 18px;display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+h2{font-size:17px;margin:0 0 14px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:12px;font-weight:750;color:var(--muted);margin-bottom:5px}
+select,input[type=number]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--fld);color:var(--ink);font:inherit}
+select:disabled,input:disabled{opacity:.5}
+.field{margin-bottom:13px}.check{display:flex;gap:9px;align-items:flex-start;margin:12px 0;color:var(--muted);font-size:13px}.check input{width:auto;margin-top:4px}
+.sc{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0 14px}
+.sc button{border:1px solid var(--line);background:var(--nb);color:var(--ink);border-radius:99px;padding:6px 11px;font:inherit;font-size:12.5px;font-weight:650;cursor:pointer}
+.result{border-radius:12px;padding:17px;margin-bottom:12px;background:var(--nb);border:1px solid var(--line)}
+.status{font-size:11px;letter-spacing:.1em;font-weight:900;text-transform:uppercase}
+.result h3{font-size:21px;margin:5px 0}.result p{margin:5px 0;color:var(--muted)}
+.green{background:var(--gb);border-color:var(--gl)}.green .status{color:var(--green)}
+.amber{background:var(--ab);border-color:var(--al)}.amber .status{color:var(--amber)}
+.red{background:var(--rb);border-color:var(--rl)}.red .status{color:var(--red)}
+ul{padding-left:18px;margin:8px 0}li{margin:5px 0}
+.note{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;margin-top:14px}
+@media(max-width:720px){main{grid-template-columns:1fr}}
+</style></head><body>
+<header><div class="eyebrow">Product case study - clickable prototype</div><h1>Shiftwell Swap Rules</h1><p>Today every swap waits for a manual manager decision. This prototype shows rules deciding each account's request: block, escalate, or clear low-risk swaps.</p></header>
+<main>
+<section class="panel"><h2>Test a proposed swap</h2>
+<div class="sc" id="sc"></div>
+<div class="grid">
+<div class="field"><label for="account">Customer</label><select id="account"><option>FreshBowl</option><option>CarePoint Clinics</option><option>UrbanMart</option></select></div>
+<div class="field"><label for="role">Staff role</label><select id="role"></select></div>
+<div class="field"><label for="hours">Hours after swap this week</label><input id="hours" type="number" min="0" max="100" value="42"></div>
+<div class="field"><label for="cert">BLS and nursing council registration</label><select id="cert"><option value="valid">Valid</option><option value="expired">Expired</option><option value="unknown">Unverified</option></select></div>
+</div>
+<label class="check"><input id="trained" type="checkbox" checked> Staff member is trained for the station / role</label>
+<label class="check" id="regwrap"><input id="regional" type="checkbox"> Regional manager has approved</label>
+<div class="note">Illustrative only; not connected to live data. Each customer's rules come from its request in the brief: FreshBowl (training), CarePoint (required certificates), UrbanMart (more than 48 hrs/week).</div>
+</section>
+<section class="panel"><h2>Decision</h2><div id="result" class="result"></div><h2>Why this decision?</h2><ul id="reasons"></ul></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const ROLES={"FreshBowl":["Cook"],"CarePoint Clinics":["Nurse"],"UrbanMart":["Store associate"]};
+const SC=[["FreshBowl low-risk swap",{a:"FreshBowl",t:true}],["Untrained for station",{a:"FreshBowl",t:false}],["Nurse with expired BLS",{a:"CarePoint Clinics",t:true,c:"expired"}],["UrbanMart over 48 hrs",{a:"UrbanMart",t:true,h:50}],["UrbanMart, regional approved",{a:"UrbanMart",t:true,h:50,r:true}]];
+$("sc").innerHTML=SC.map((s,i)=>`<button data-i="${i}">${s[0]}</button>`).join("");
+$("sc").onclick=e=>{const i=e.target.dataset.i;if(i===undefined)return;const s=SC[i][1];
+ $("account").value=s.a;fill();$("trained").checked=s.t;$("cert").value=s.c||"valid";$("hours").value=s.h||30;$("regional").checked=!!s.r;run();};
+function fill(){$("role").innerHTML=ROLES[$("account").value].map(r=>`<option>${r}</option>`).join("");}
+function run(){
+ const a=$("account").value,h=Number($("hours").value||0),cert=$("cert").value,tr=$("trained").checked,rg=$("regional").checked;
+ $("cert").disabled=a!=="CarePoint Clinics";
+ $("hours").disabled=a!=="UrbanMart";
+ $("regwrap").style.display=a==="UrbanMart"&&h>48?"flex":"none";
+ let cls,st,ti,rs=[];
+ if(!tr){cls="red";st="Blocked";ti="Not trained for this shift";rs.push("The staff member is not trained for the station / role, so the swap is blocked before it reaches the manager.");}
+ else if(a==="CarePoint Clinics"&&cert!=="valid"){cls="red";st="Blocked";ti=cert==="expired"?"Certificate expired":"Credential unverified";rs.push("A certificate required for the role (BLS, nursing council registration) is "+(cert==="expired"?"expired":"unverified")+". No one is scheduled or swapped into the shift until it is valid.");}
+ else if(a==="UrbanMart"&&h>48){
+  if(rg){cls="green";st="Approved with regional approval";ti="Regional approval recorded";rs.push("The swap takes the staff member past 48 hrs this week ("+h+" hrs) and regional manager approval is recorded.");}
+  else{cls="amber";st="Regional approval required";ti="Hold for regional approval";rs.push("The swap takes the staff member past 48 hrs this week ("+h+" hrs). It needs regional manager approval.");}}
+ else if(a==="FreshBowl"){cls="green";st="Low-risk";ti="Auto-approval candidate";rs.push("The staff member is trained for the station, so this swap passes the check FreshBowl's manager makes by hand.");}
+ else{cls="amber";st="Needs review";ti="Route to Location Manager";rs.push("No rule blocks or escalates this swap. It goes to the Location Manager for approval, as today.");}
+ if(tr&&!rs.some(x=>/trained/.test(x))) rs.push("Training: trained.");
+ if(a==="CarePoint Clinics"&&cert==="valid") rs.push("Required certificates: valid.");
+ $("result").className="result "+cls;
+ $("result").innerHTML='<div class="status">'+st+'</div><h3>'+ti+'</h3>';
+ $("reasons").innerHTML=rs.map(x=>"<li>"+x+"</li>").join("");
+}
+$("account").onchange=()=>{fill();$("regional").checked=false;run();};
+["role","hours","cert","trained","regional"].forEach(id=>$(id).addEventListener("input",run));
+fill();$("hours").value=30;run();
+</script></body></html>
